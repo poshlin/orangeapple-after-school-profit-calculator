@@ -5,8 +5,8 @@ import { useMemo, useState } from "react";
 const courses = {
   minecraft: { name: "Minecraft 麥塊程式班教育版", tuition: 17800, lessons: 15, device: "筆電" },
   roblox: { name: "Roblox AI 遊戲設計班", tuition: 17800, lessons: 15, device: "筆電" },
-  scratch: { name: "Scratch 實戰班（SB）", tuition: 17800, lessons: 15, device: "筆電" },
-  python: { name: "Python 程式開發班（PYB）", tuition: 19400, lessons: 15, device: "筆電" },
+  scratch: { name: "Scratch", tuition: 17800, lessons: 15, device: "筆電" },
+  python: { name: "Python", tuition: 19400, lessons: 15, device: "筆電" },
   albert: { name: "頑皮艾伯特不在家", tuition: 18300, lessons: 35, device: "平板" },
 } as const;
 
