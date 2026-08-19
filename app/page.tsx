@@ -3,11 +3,11 @@
 import { useMemo, useState } from "react";
 
 const courses = {
-  minecraft: { name: "Minecraft 程式創作", tuition: 17800, lessons: 15, device: "筆電" },
-  roblox: { name: "Roblox AI 遊戲設計", tuition: 17800, lessons: 15, device: "筆電" },
-  scratch: { name: "Scratch 程式創作", tuition: 17800, lessons: 15, device: "筆電" },
-  python: { name: "Python 程式開發", tuition: 19400, lessons: 15, device: "筆電" },
-  albert: { name: "頑皮艾伯特", tuition: 18300, lessons: 35, device: "平板" },
+  minecraft: { name: "Minecraft 麥塊程式班教育版", tuition: 17800, lessons: 15, device: "筆電" },
+  roblox: { name: "Roblox AI 遊戲設計班", tuition: 17800, lessons: 15, device: "筆電" },
+  scratch: { name: "Scratch 實戰班（SB）", tuition: 17800, lessons: 15, device: "筆電" },
+  python: { name: "Python 程式開發班（PYB）", tuition: 19400, lessons: 15, device: "筆電" },
+  albert: { name: "頑皮艾伯特不在家", tuition: 18300, lessons: 35, device: "平板" },
 } as const;
 
 type CourseKey = keyof typeof courses;
@@ -21,27 +21,35 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 export default function Home() {
   const [courseKey, setCourseKey] = useState<CourseKey>("minecraft");
   const [students, setStudents] = useState(6);
-  const [timeslots, setTimeslots] = useState(1);
-  const [weeklyLessons, setWeeklyLessons] = useState(1);
+  const [secondCourseKey, setSecondCourseKey] = useState<CourseKey | "none">("none");
+  const [secondStudents, setSecondStudents] = useState(4);
   const [ownedDevices, setOwnedDevices] = useState(0);
   const [allInDevicePrice, setAllInDevicePrice] = useState(13000);
 
   const result = useMemo(() => {
     const course = courses[courseKey];
-    const totalStudents = clamp(students, 1, 40) * clamp(timeslots, 1, 10);
-    const lessonsPerMonth = clamp(weeklyLessons, 1, 3) * 4;
+    const secondCourse = secondCourseKey === "none" ? null : courses[secondCourseKey];
+    const firstCount = clamp(students, 1, 40);
+    const secondCount = secondCourse ? clamp(secondStudents, 1, 40) : 0;
+    const totalStudents = firstCount + secondCount;
+    const lessonsPerMonth = 4;
     const centerPerLesson = course.tuition / course.lessons * 0.3;
-    const monthlyShare = centerPerLesson * lessonsPerMonth * totalStudents;
+    const secondCenterPerLesson = secondCourse ? secondCourse.tuition / secondCourse.lessons * 0.3 : 0;
+    const firstMonthlyShare = centerPerLesson * lessonsPerMonth * firstCount;
+    const secondMonthlyShare = secondCenterPerLesson * lessonsPerMonth * secondCount;
+    const monthlyShare = firstMonthlyShare + secondMonthlyShare;
     const quarterlyShare = monthlyShare * 3;
     const annualShare = monthlyShare * 12;
-    const requiredDevices = course.device === "平板" ? 0 : Math.max(0, clamp(students, 1, 40) + 1 - clamp(ownedDevices, 0, 100));
+    const laptopClassSizes = [course.device === "筆電" ? firstCount : 0, secondCourse?.device === "筆電" ? secondCount : 0];
+    const largestLaptopClass = Math.max(...laptopClassSizes);
+    const requiredDevices = largestLaptopClass === 0 ? 0 : Math.max(0, largestLaptopClass + 1 - clamp(ownedDevices, 0, 100));
     const equipmentTotal = requiredDevices * clamp(allInDevicePrice, 0, 100000);
     const downPayment = equipmentTotal * 0.3;
     const balance = equipmentTotal - downPayment;
     const payoffMonths = balance > 0 && monthlyShare > 0 ? Math.ceil(balance / monthlyShare) : 0;
     const cashBreakEvenMonths = equipmentTotal > 0 && monthlyShare > 0 ? Math.ceil(equipmentTotal / monthlyShare) : 0;
-    return { course, totalStudents, lessonsPerMonth, monthlyShare, quarterlyShare, annualShare, requiredDevices, equipmentTotal, downPayment, balance, payoffMonths, cashBreakEvenMonths };
-  }, [courseKey, students, timeslots, weeklyLessons, ownedDevices, allInDevicePrice]);
+    return { course, secondCourse, firstCount, secondCount, totalStudents, lessonsPerMonth, firstMonthlyShare, secondMonthlyShare, monthlyShare, quarterlyShare, annualShare, requiredDevices, equipmentTotal, downPayment, balance, payoffMonths, cashBreakEvenMonths };
+  }, [courseKey, students, secondCourseKey, secondStudents, ownedDevices, allInDevicePrice]);
 
   return (
     <main>
@@ -59,7 +67,7 @@ export default function Home() {
       <section className="calculator">
         <aside className="inputs">
           <div className="section-title"><span>01</span><h2>輸入合作條件</h2></div>
-          <Field label="主力課程">
+          <Field label="第一門課程">
             <select value={courseKey} onChange={(e) => setCourseKey(e.target.value as CourseKey)}>
               {Object.entries(courses).map(([key, item]) => <option key={key} value={key}>{item.name}</option>)}
             </select>
@@ -68,18 +76,24 @@ export default function Home() {
             <Field label="每班學生數" hint="新時段4人可啟動">
               <input type="number" min="1" max="40" value={students} onChange={(e) => setStudents(Number(e.target.value))} />
             </Field>
-            <Field label="同時開課時段">
-              <input type="number" min="1" max="10" value={timeslots} onChange={(e) => setTimeslots(Number(e.target.value))} />
+            <Field label="每週上課頻率" hint="合作班固定每週一堂">
+              <input value="每週 1 堂" disabled />
             </Field>
           </div>
-          <Field label="每週上課堂數">
-            <div className="segmented">
-              {[1,2,3].map(n => <button key={n} type="button" className={weeklyLessons === n ? "active" : ""} onClick={() => setWeeklyLessons(n)}>{n} 堂</button>)}
-            </div>
+
+          <div className="subhead">第二門課程（選填）</div>
+          <Field label="是否加入第二門課">
+            <select value={secondCourseKey} onChange={(e) => setSecondCourseKey(e.target.value as CourseKey | "none")}>
+              <option value="none">不加入第二門課</option>
+              {Object.entries(courses).filter(([key]) => key !== courseKey).map(([key, item]) => <option key={key} value={key}>{item.name}</option>)}
+            </select>
           </Field>
+          {secondCourseKey !== "none" && <Field label="第二門課學生數" hint="與第一門課安排不同時段，共用同一批設備">
+            <input type="number" min="1" max="40" value={secondStudents} onChange={(e) => setSecondStudents(Number(e.target.value))} />
+          </Field>}
 
           <div className="subhead">設備條件</div>
-          {result.course.device === "平板" ? (
+          {result.requiredDevices === 0 && result.course.device === "平板" && result.secondCourse?.device !== "筆電" ? (
             <div className="notice">此課程使用平板；本版不計入筆電採購與分期。</div>
           ) : <>
             <Field label="中心既有合格筆電">
@@ -96,7 +110,7 @@ export default function Home() {
           <div className="headline-result">
             <p>一年預估增加</p>
             <strong>NT$ {money.format(result.annualShare)}</strong>
-            <span>{result.totalStudents} 位學生 · {timeslots} 個時段 · 每週 {weeklyLessons} 堂</span>
+            <span>{result.secondCourse ? `兩門課共 ${result.totalStudents} 位學生` : `${result.firstCount} 位學生`} · 固定每週一堂</span>
           </div>
           <div className="periods">
             <div><span>每月預估</span><b>NT$ {money.format(result.monthlyShare)}</b></div>
@@ -120,7 +134,7 @@ export default function Home() {
 
           <div className="statement">
             <span>試算摘要</span>
-            <p>以目前條件，中心一季預估取得 <b>NT$ {money.format(result.quarterlyShare)}</b>、一年約 <b>NT$ {money.format(result.annualShare)}</b> 分潤。{result.equipmentTotal > 0 ? `設備預估於第 ${result.payoffMonths} 個月清償，第 ${result.cashBreakEvenMonths} 個月達成累積現金回本。` : "目前不需新增筆電投入。"}</p>
+            <p>以目前條件，{result.secondCourse ? `${result.course.name}與${result.secondCourse.name}安排不同時段，` : ""}中心一季預估取得 <b>NT$ {money.format(result.quarterlyShare)}</b>、一年約 <b>NT$ {money.format(result.annualShare)}</b> 分潤。{result.equipmentTotal > 0 ? `筆電依較大班級共用，設備預估於第 ${result.payoffMonths} 個月清償，第 ${result.cashBreakEvenMonths} 個月達成累積現金回本。` : "目前不需新增筆電投入。"}</p>
           </div>
         </section>
       </section>
