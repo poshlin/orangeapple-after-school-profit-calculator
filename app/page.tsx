@@ -54,7 +54,7 @@ export default function Home() {
   return (
     <main>
       <header className="topbar">
-        <div className="brand"><span className="brand-mark">〈●〉</span><strong>橘子蘋果</strong><span>程式學苑</span></div>
+        <div className="brand"><img src="/logo-full.png" alt="橘子蘋果程式學苑" /></div>
         <div className="version">安親班合作收益試算器 · 2026</div>
       </header>
 
