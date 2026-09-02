@@ -135,12 +135,13 @@ export default function Home() {
             <Field label="希望同堂保留的試聽席位" hint="主任自行選擇；2席為建議情境，另保留1台純備用機">
               <select value={trialSeats} onChange={(e) => change(setTrialSeats, e.target.value)}><option value="">請選擇試聽席位</option><option value="0">0 席｜精簡型</option><option value="1">1 席</option><option value="2">2 席｜平衡型（建議）</option><option value="3">3 席｜招生型</option></select>
             </Field>
+            {ownedDevices !== "" && trialSeats !== "" && <div className="notice device-requirement">依目前條件共需 {result.recommendedDevicePool} 台（正式班 {Math.max(result.recommendedDevicePool - numberValue(trialSeats) - 1, 0)} 台＋試聽 {numberValue(trialSeats)} 台＋備用 1 台）；中心現有 {numberValue(ownedDevices)} 台，{result.requiredDevices === 0 ? "不需新增設備。" : `仍需新增 ${result.requiredDevices} 台。`}</div>}
             <Field label="每台完整交付價" hint={result.requiredDevices === 0 ? "目前不需新增設備，可留白或填 0" : "依當日有效報價，須包含檢測、設定與兩年維護"}>
               <div className="money-input"><span>NT$</span><input type="number" min="0" step="500" value={allInDevicePrice} placeholder={result.requiredDevices === 0 ? "可留白" : "請輸入當日有效報價"} onChange={(e) => change(setAllInDevicePrice, e.target.value)} /></div>
             </Field>
           </>}
           <button className="calculate-button" type="button" disabled={!result.ready} onClick={() => setShowResult(true)}>完成試算</button>
-          <p className="invalid-hint">{result.ready ? "條件已完成，可以產生試算結果。" : "請依序完成所有合作條件。"}</p>
+          <p className="invalid-hint">{result.ready ? "條件已完成，可以產生試算結果。" : ownedDevices !== "" && trialSeats !== "" && result.requiredDevices > 0 && numberValue(allInDevicePrice) <= 0 ? `目前仍需新增 ${result.requiredDevices} 台設備，請輸入每台完整交付價。` : "請依序完成所有合作條件。"}</p>
         </aside>
 
         <section className="results" aria-live="polite">
