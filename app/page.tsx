@@ -92,7 +92,7 @@ export default function Home() {
 
       <section className="calculator">
         <aside className="inputs">
-          <div className="section-title"><span>01</span><h2>輸入合作條件</h2></div>
+          <div className="section-title"><span>01</span><h2>課程與招生</h2></div>
           <Field label="第一門課程">
             <select value={courseKey} onChange={(e) => { setCourseKey(e.target.value as CourseKey | ""); setShowResult(false); }}>
               <option value="">請選擇第一門課程</option>
@@ -125,11 +125,12 @@ export default function Home() {
               <div className="money-input"><span>NT$</span><input type="number" min="0" step="100" value={secondTuition} placeholder="請輸入本次洽談金額" onChange={(e) => change(setSecondTuition, e.target.value)} /></div>
             </Field>
           </>}
-          <Field label="中心分潤比例" hint="依本次合作條件輸入，不預設比例">
+          <div className="subhead step-subhead"><span>02</span>合作分潤條件</div>
+          <Field label="中心分潤比例（套用全部課程）" hint="本次試算的第一、第二門課皆使用此比例；不預設數字">
             <div className="money-input"><span>%</span><input type="number" min="0" max="100" step="0.5" value={shareRate} placeholder="請輸入本次洽談比例" onChange={(e) => change(setShareRate, e.target.value)} /></div>
           </Field>
 
-          <div className="subhead">設備條件</div>
+          <div className="subhead step-subhead"><span>03</span>設備配置</div>
           {result.noLaptop ? <div className="notice">目前選擇的課程可使用平板或筆電；中心已有合格筆電時可直接沿用，本版不另計設備採購。</div> : <>
             <Field label="中心既有合格筆電"><input type="number" min="0" max="100" value={ownedDevices} placeholder="沒有則輸入 0" onChange={(e) => change(setOwnedDevices, e.target.value)} /></Field>
             <Field label="希望同堂保留的試聽席位" hint="主任自行選擇；2席為建議情境，另保留1台純備用機">
@@ -145,7 +146,7 @@ export default function Home() {
         </aside>
 
         <section className="results" aria-live="polite">
-          <div className="section-title light"><span>02</span><h2>主任專屬收益預估</h2></div>
+          <div className="section-title light"><span>04</span><h2>主任專屬收益預估</h2></div>
           {!showResult ? <div className="waiting"><strong>完成條件後，再揭曉試算結果</strong><span>業務可邊談邊確認課程、人數、分潤與設備，最後一次呈現完整收益與回本時間。</span></div> : <>
             <div className="headline-result"><p>一年預估增加</p><strong>NT$ {money.format(result.annualShare)}</strong><span>{result.secondCourse ? `兩門課共 ${result.firstCount + result.secondCount} 位學生` : `${result.firstCount} 位學生`} · 固定每週一堂</span></div>
             <div className="periods"><div><span>每月預估</span><b>NT$ {money.format(result.monthlyShare)}</b></div><div><span>一季預估</span><b>NT$ {money.format(result.quarterlyShare)}</b></div></div>
